@@ -1,0 +1,167 @@
+/* TCSS 305 - Spring 2013
+ * Tetris Project
+ * BoardDisplay Class
+ */
+
+package view;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+
+import model.AbstractPiece;
+import model.Block;
+import model.Board;
+import model.MutablePiece;
+
+/**
+ * Displays the board of a Tetris game.
+ * 
+ * @author Rylie Nelson
+ * @version Spring 2013
+ */
+
+public class BoardDisplay extends JPanel implements Observer {
+
+  /**
+   * The serial version UID of this class.
+   */
+  
+  private static final long serialVersionUID = -5751221584765644948L;
+  
+  /**
+   * Controls size of pieces and how far they are spaced apart.
+   */
+  
+  private static final double SIZE_FACTOR = 20;
+  
+  /**
+   * The default color of the board's background.
+   */
+  
+  private static final Color DEFAULT_COLOR = Color.GRAY;
+  
+  /**
+   * The default height of the Board in pixels.
+   */
+  
+  private static final int DEFAULT_HEIGHT = (int) (SIZE_FACTOR * 22);
+  
+  /**
+   * The default width of the Board in pixels.
+   */
+  
+  private static final int DEFAULT_WIDTH = (int) (SIZE_FACTOR * 10);
+  
+  /**
+   * A list of the frozen blocks on the board.
+   */
+  
+  private List<Block[]> my_frozen_blocks;
+  
+  /**
+   * The currently controllable piece.
+   */
+  
+  private MutablePiece my_current_piece;
+  
+  /**
+   * True if the game is paused, false if not.
+   */
+  
+  private boolean my_pause_state;
+  
+  /**
+   * Constructs a new BoardDisplay object.
+   */
+  
+  public BoardDisplay() {
+    super();
+    my_pause_state = false;
+    setBackground(DEFAULT_COLOR);
+    setBorder(BorderFactory.createLineBorder(Color.WHITE));
+    setPreferredSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
+  }
+  
+  @Override
+  public void addNotify() {
+    super.addNotify();
+    requestFocus();
+  }
+  
+  @Override
+  public void paintComponent(final Graphics the_graphics) {
+    super.paintComponent(the_graphics);
+    final Graphics2D g2d = (Graphics2D) the_graphics;
+    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    
+    final int[][] current_piece_coordinates = 
+        ((AbstractPiece) my_current_piece).getBoardCoordinates();
+    
+    for (int i = 0; i < current_piece_coordinates.length; i++) {
+      final Shape s = new Rectangle2D.Double(current_piece_coordinates[i][0] * SIZE_FACTOR, 
+                                             DEFAULT_HEIGHT - current_piece_coordinates[i][1] 
+                                                 * SIZE_FACTOR - SIZE_FACTOR, SIZE_FACTOR, 
+                                                 SIZE_FACTOR);
+      g2d.setPaint(((AbstractPiece) my_current_piece).getBlock().getColor());
+      g2d.fill(s);
+      g2d.setPaint(Color.BLACK);
+      g2d.draw(s);
+    }
+    
+    for (int i = 0; i < my_frozen_blocks.size(); i++) {
+      for (int j = 0; j < my_frozen_blocks.get(i).length; j++) {
+        if (my_frozen_blocks.get(i)[j] != Block.EMPTY) {
+          final Shape s = new Rectangle2D.Double(j * SIZE_FACTOR, 
+                                                 DEFAULT_HEIGHT - i * SIZE_FACTOR 
+                                                 - SIZE_FACTOR, SIZE_FACTOR, SIZE_FACTOR);
+
+          g2d.setPaint(my_frozen_blocks.get(i)[j].getColor());
+          g2d.fill(s);
+          g2d.setPaint(Color.BLACK);
+          g2d.draw(s);
+        }
+      }
+    }
+    
+    if (my_pause_state) {
+      final Shape s = new Rectangle2D.Double(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+      g2d.setPaint(Color.BLUE);
+      g2d.fill(s);
+    }
+  }
+  
+  public boolean getPause() {
+    return my_pause_state;
+  }
+  
+  public void setPause() {
+    if (my_pause_state) {
+      my_pause_state = false;
+      repaint();
+    } else {
+      my_pause_state = true;
+      repaint();
+    }
+  }
+
+  @Override
+  public void update(final Observable the_o, final Object the_arg) {
+    my_current_piece = ((Board) the_o).getCurrentPiece();
+    my_frozen_blocks = (LinkedList<Block[]>) ((Board) the_o).getFrozenBlocks();
+    
+    repaint();
+  }
+
+}

@@ -1,0 +1,129 @@
+/* TCSS 305 - Spring 2013
+ * Tetris Project
+ * NextPieceDisplay class
+ */
+
+package view;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+
+import model.AbstractPiece;
+import model.Board;
+import model.MutablePiece;
+
+/**
+ * A panel that displays the upcoming piece.
+ * 
+ * @author Rylie Nelson
+ * @version Spring 2013
+ */
+public class NextPieceDisplay extends JPanel implements Observer {
+  
+  /**
+   * The serial version UID for this class.
+   */
+  
+  private static final long serialVersionUID = 5437283367054624324L;
+
+  /**
+   * The default background color.
+   */
+  
+  private static final Color DEFAULT_COLOR = Color.BLACK;
+  
+  /**
+   * The default height of the panel.
+   */
+  
+  private static final int DEFAULT_HEIGHT = 80;
+  
+  /**
+   * The default width of the panel.
+   */
+  
+  private static final int DEFAULT_WIDTH = 50;
+  
+  /**
+   * Controls size of pieces and how far they are spaced apart.
+   */
+
+  private static final double SIZE_FACTOR = 10;
+  
+  /**
+   * Used to ensure the piece is displayed in the middle of the panel.
+   */
+  
+  private static final int LOCATION_OFFSET = (int) (3 * SIZE_FACTOR);
+  
+  /**
+   * The next piece, which is the piece that this panel displays.
+   */
+  
+  private MutablePiece my_next_piece;
+  
+  /**
+   * Constructs a new NextPieceDisplay.
+   */
+  
+  public NextPieceDisplay() {
+    super();
+    setBackground(DEFAULT_COLOR);
+    setBorder(BorderFactory.createLineBorder(Color.WHITE));
+    setPreferredSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
+  }
+  
+  /**
+   * Paints the next piece.
+   * 
+   * @param the_graphics The graphic to be drawn.
+   */
+  
+  @Override
+  public void paintComponent(final Graphics the_graphics) {
+    super.paintComponent(the_graphics);
+    final Graphics2D g2d = (Graphics2D) the_graphics;
+    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    
+    final int[][] next_piece_coordinates = 
+        ((AbstractPiece) my_next_piece).getRotation();
+    
+    for (int i = 0; i < next_piece_coordinates.length; i++) {
+      final Shape s = new Rectangle2D.Double(next_piece_coordinates[i][0] * SIZE_FACTOR, 
+                                             DEFAULT_HEIGHT - next_piece_coordinates[i][1] 
+                                                 * SIZE_FACTOR - LOCATION_OFFSET, 
+                                                 SIZE_FACTOR, SIZE_FACTOR);
+      g2d.setPaint(((AbstractPiece) my_next_piece).getBlock().getColor());
+      g2d.fill(s);
+      g2d.setPaint(Color.BLACK);
+      g2d.draw(s);
+    }
+  }
+  
+  /**
+   * Part of the Observer Design Pattern, updates the panel whenever required.
+   * 
+   * @param the_o The observed object.
+   * @param the_arg A possibly useful parameter.
+   */
+
+  @Override
+  public void update(final Observable the_o, final Object the_arg) {
+    my_next_piece = ((Board) the_o).getNextPiece();
+    
+    if (!((Board) the_o).gameIsOver()) {
+      repaint();
+    }
+  }
+
+}

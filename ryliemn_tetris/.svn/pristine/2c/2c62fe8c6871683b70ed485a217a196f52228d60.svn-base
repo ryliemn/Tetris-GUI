@@ -1,0 +1,48 @@
+/* TCSS 305 - Spring 2013
+ * Tetris Project
+ * TetrisMenuBar class
+ */
+
+package view;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+
+public class TetrisMenuBar extends JMenuBar implements Observer {
+  
+  public TetrisMenuBar() {
+    super();
+    start();
+    setVisible(true);
+  }
+  
+  private void start() {
+    final JMenu file = new JMenu("File");
+    add(new JMenu("File"));
+    
+    final JMenuItem newgame = new JMenuItem();
+    newgame.setName("New Game");
+    newgame.addActionListener(new ActionListener() {
+      public void actionPerformed(final ActionEvent the_event) {
+        //my_board.step();
+      }
+    });
+    file.add(newgame);
+    file.addSeparator();
+  }
+
+  @Override
+  public void update(final Observable the_o, final Object the_arg) {
+    // TODO Auto-generated method stub
+    
+  }
+  
+  
+
+}

@@ -1,0 +1,172 @@
+/* TCSS 305 - Spring 2013
+ * Tetris Project
+ * TetrisGUI Class
+ */
+
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.Timer;
+
+import model.Board;
+
+/**
+ * A class that represents the GUI for Tetris.
+ * 
+ * @author Rylie Nelson
+ * @version Spring 2013
+ */
+
+public class TetrisGUI extends JFrame implements Observer {
+
+  /**
+   * The serial version UID for this class.
+   */
+  
+  private static final long serialVersionUID = 106474944905625785L;
+  
+  /**
+   * The default height of the GUI in pixels.
+   */
+  
+  private static final int DEFAULT_HEIGHT = 235;
+  
+  /**
+   * The default width of the GUI in pixels.
+   */
+  
+  private static final int DEFAULT_WIDTH = 100;
+  
+  /**
+   * The default width of the game board.
+   */
+  
+  private static final int DEFAULT_BOARD_WIDTH = 10;
+  
+  /**
+   * The default height of the game board.
+   */
+  
+  private static final int DEFAULT_BOARD_HEIGHT = 20;
+  
+  /**
+   * The starting delay of the timer.
+   */
+  
+  private static final int DEFAULT_TIMER_DELAY = 500;
+  
+  /**
+   * The timer for this Tetris game.
+   */
+  
+  private final Timer my_game_timer = new Timer(0, null);
+  
+  /**
+   * Constructs a new TetrisGUI object.
+   */
+  
+  public TetrisGUI() {
+    super("Tetris!");
+    start();
+  }
+  
+  /**
+   * Starts the various components of Tetris.
+   */
+  
+  private void start() {
+    setLayout(new FlowLayout());
+    final Board board = new Board();
+    board.newGame(DEFAULT_BOARD_WIDTH, DEFAULT_BOARD_HEIGHT, null);
+    final BoardDisplay board_display = new BoardDisplay();
+    final NextPieceDisplay next_piece_display = new NextPieceDisplay();
+    
+    my_game_timer.addActionListener(new ActionListener() {
+      public void actionPerformed(final ActionEvent the_event) {
+        board.step();
+      }
+    });
+    my_game_timer.setDelay(DEFAULT_TIMER_DELAY);
+    
+    board.addObserver(board_display);
+    board.addObserver(next_piece_display);
+    board.addObserver(this);
+    
+    add(board_display, BorderLayout.CENTER);
+    add(next_piece_display, BorderLayout.EAST);
+
+    setSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    
+    pack();
+
+    getContentPane().setBackground(Color.BLACK);
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    printControlIntro();
+    my_game_timer.start();
+    setResizable(false);
+    setVisible(true);
+    
+    /**
+     * Key listener for the Tetris game. Controls piece movement.
+     * 
+     * @author Rylie Nelson
+     * @version Spring 2013
+     */
+    
+    final class TetrisKeyListener extends KeyAdapter {
+      @Override
+      public void keyPressed(final KeyEvent the_event) {
+        if (the_event.getKeyCode() == KeyEvent.VK_DOWN) {
+          board.moveDown();
+        } else if (the_event.getKeyCode() == KeyEvent.VK_LEFT) {
+          board.moveLeft();
+        } else if (the_event.getKeyCode() == KeyEvent.VK_RIGHT) {
+          board.moveRight();
+        } else if (the_event.getKeyCode() == KeyEvent.VK_UP) {
+          board.hardDrop();
+        } else if (the_event.getKeyCode() == KeyEvent.VK_SPACE) {
+          board.rotate();
+        }
+      }
+    }
+    
+    board_display.addKeyListener(new TetrisKeyListener());
+  }
+  
+  /**
+   * Prints the controls to a pop-up message box.
+   */
+  
+  private void printControlIntro() {
+    final StringBuilder sb = new StringBuilder();
+    
+    sb.append("Left arrow key moves piece left\n");
+    sb.append("Right arrow key moves key right\n");
+    sb.append("Down arrow key moves key down\n");
+    sb.append("Up arrow key hard drops piece\n");
+    sb.append("Space bar rotates piece\n");
+    sb.append("Good luck!");
+    
+    JOptionPane.showMessageDialog(null, sb.toString());
+  }
+
+  @Override
+  public void update(final Observable the_o, final Object the_arg) {
+    if (((Board) the_o).gameIsOver()) {
+      my_game_timer.stop();
+      JOptionPane.showMessageDialog(null, "SUCCESS WAS NOT YOURS :(");
+    }
+  }
+
+}
